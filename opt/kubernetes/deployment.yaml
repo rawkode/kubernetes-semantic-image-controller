@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic
+spec:
+  selector:
+    matchLabels:
+      app: semantic
+  template:
+    metadata:
+      labels:
+        app: semantic
+    spec:
+      volumes:
+        - name: certs
+          secret:
+            secretName: semantic
+      containers:
+        - name: semantic
+          image: rawkode/kubernetes-semantic-version:latest
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: certs
+              mountPath: /certs
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 443
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: semantic
+type: Opaque
+data:
+  webhook-key.pem: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUhtRGdBUzFhZ2R1VFBlRGdhaVNyT2g5UFlwZTVacEJKNTFwOHBwNUpsTjFvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZzRzS0JUZS90T3E1MlRVTkRPT2NJblZ4U0RrL3hJVFFQR2xFTnNNdDhtK3lQNGpqQitsUQpwYW9QbmM0TEsvRTdUMlg4Q0hCR1BiUkVrbm0xbXFSWG13PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+  webhook.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN3VENDQWFtZ0F3SUJBZ0lRTFBieVNXQktnbUVyVGhTQ244YkRWVEFOQmdrcWhraUc5dzBCQVFzRkFEQVYKTVJNd0VRWURWUVFERXdwcmRXSmxjbTVsZEdWek1CNFhEVEl4TURJd09URTBNVFV3TjFvWERUSXlNREl3T1RFMApNVFV3TjFvd1VERVZNQk1HQTFVRUNoTU1jM2x6ZEdWdE9tNXZaR1Z6TVRjd05RWURWUVFERXk1emVYTjBaVzA2CmJtOWtaVHB6WlcxaGJuUnBZeTVrWldaaGRXeDBMbk4yWXk1amJIVnpkR1Z5TG14dlkyRnNNRmt3RXdZSEtvWkkKemowQ0FRWUlLb1pJemowREFRY0RRZ0FFZzRzS0JUZS90T3E1MlRVTkRPT2NJblZ4U0RrL3hJVFFQR2xFTnNNdAo4bSt5UDRqakIrbFFwYW9QbmM0TEsvRTdUMlg4Q0hCR1BiUkVrbm0xbXFSWG02T0JuRENCbVRBT0JnTlZIUThCCkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVEFRSC9CQUl3QURBZkJnTlYKSFNNRUdEQVdnQlNDOVd3bURhMTB6RWl3eUpYYUsrYTAweXVHbVRCREJnTlZIUkVFUERBNmdoUnpaVzFoYm5ScApZeTVrWldaaGRXeDBMbk4yWTRJaWMyVnRZVzUwYVdNdVpHVm1ZWFZzZEM1emRtTXVZMngxYzNSbGNpNXNiMk5oCmJEQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFneG0waFJxUzBPb0hLcFJyejBjK1d5RXd5SnI4cUt6VzdENkIKRCsySWF0RWxpRlRpZGwwTWs1SHFmazRqKzZOWExrYWIreFRob2hSM0podU5HQmxHTXU1K1MyUFJBOUM5Wk1MawpERGd3VlFrNHdZckhZbkpyY1hPTEMyMmRMMVU3S0ovaXgvVVBZZ1hyRjQ0RmZDU1p3dUEwVElGRjN4UlZYZzVVCmJqYTZmOVRWUGMwSVlQN2VWQlYzdGJhYzBtU3hCU040Ym1zbDlMVkNONkhKMkxvSWluYW9SbjlWRnp5UkUvM1gKVlR6L1pZYWlJSzR6enBnMVhLNmN1aEdwK2p5bENQVlJ5SEZsME1nTGUvYXJLYUtFV2ZNM0ZSck5nSXNVemhEdQpVTVhDTUtmclZEUVYxa1FUQzlkZ1JiNXcxSkNzUXc0U1FRc055aFFSa1hqc3hwRk9IUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic
+spec:
+  selector:
+    app: semantic
+  ports:
+    - port: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug
+spec:
+  selector:
+    matchLabels:
+      app: debug
+  template:
+    metadata:
+      labels:
+        app: debug
+    spec:
+      containers:
+        - name: debug
+          image: "nginx:>= 1.16, <= 1.18"
+          command:
+            - sleep
+          args:
+            - +Inf

@@ -1,0 +1,3 @@
+/kubernetes-semantic-version
+*.pem
+*.csr

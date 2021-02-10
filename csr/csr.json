@@ -1,0 +1,16 @@
+{
+    "hosts": [
+        "semantic.default.svc",
+        "semantic.default.svc.cluster.local"
+    ],
+    "CN": "system:node:semantic.default.svc.cluster.local",
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "O": "system:nodes"
+        }
+    ]
+}
