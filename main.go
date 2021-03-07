@@ -41,7 +41,7 @@ func handleMutate(w http.ResponseWriter, r *http.Request) {
 	for idx, container := range pod.Spec.Containers {
 
 		// nginx: >= 1.78
-		// nginx: '>= 1.2 <= 1.4.5
+		// nginx: >= 1.2 <= 1.4.5
 		split := strings.SplitN(container.Image, ":", 2)
 		imageName := split[0]
 		versionConstraint := split[1]
