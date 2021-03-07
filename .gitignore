@@ -1,3 +1,6 @@
 /kubernetes-semantic-version
+/kubernetes-semantic-image-controller
+/kubernetes-semantic-image-controller-linux
+
 *.pem
 *.csr

@@ -1,8 +1,5 @@
-FROM golang:alpine
+FROM alpine:3.13.1
 
-WORKDIR /code
-COPY . /code
+COPY kubernetes-semantic-image-controller-linux /kubernetes-semantic-image-controller-linux
 
-RUN go build ./...
-
-ENTRYPOINT [ "/code/kubernetes-semantic-version" ]
+CMD ["/kubernetes-semantic-image-controller-linux"]
