@@ -42,3 +42,11 @@ You can run the tests using `go test`
 ```sh
 $ go test -v ./...
 ```
+
+## Manifests
+
+We've included the sample manifests we used in the livestream in the `opt/kubernetes` folder. You will need to 
+generate a TLS key and certificate that's trusted by your Kubernetes cluster so it can call the mutating hook
+with TLS support.
+
+If you get stuck, [follow along by watching the live episode](https://www.youtube.com/watch?v=RLpzsAQtZ7M)

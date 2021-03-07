@@ -1,9 +1,9 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: semantic
+  name: kubernetes-semantic-image-controller
 webhooks:
-  - name: semantic.default.svc.cluster.local
+  - name: kubernetes-semantic-image-controller.default.svc.cluster.local
     rules:
       - operations:
           - "CREATE"
@@ -18,7 +18,7 @@ webhooks:
       service:
         path: "/mutate"
         port: 443
-        name: semantic
+        name: kubernetes-semantic-image-controller
         namespace: default
       caBundle: <ca-bundle>
     sideEffects: None

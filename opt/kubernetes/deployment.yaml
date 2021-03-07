@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: semantic
+  name: kubernetes-semantic-image-controller
 spec:
   selector:
     matchLabels:
-      app: semantic
+      app: kubernetes-semantic-image-controller
   template:
     metadata:
       labels:
-        app: semantic
+        app: kubernetes-semantic-image-controller
     spec:
       volumes:
         - name: certs
           secret:
-            secretName: semantic
+            secretName: kubernetes-semantic-image-controller
       containers:
-        - name: semantic
-          image: rawkode/kubernetes-semantic-version:latest
+        - name: kubernetes-semantic-image-controller
+          image: kubernetes-semantic-image-controller:latest
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: certs
@@ -32,7 +32,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: semantic
+  name: kubernetes-semantic-image-controller
 type: Opaque
 data:
   webhook-key.pem: <webhook-key>
@@ -41,30 +41,9 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: semantic
+  name: kubernetes-semantic-image-controller
 spec:
   selector:
-    app: semantic
+    app: kubernetes-semantic-image-controller
   ports:
     - port: 443
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: debug
-spec:
-  selector:
-    matchLabels:
-      app: debug
-  template:
-    metadata:
-      labels:
-        app: debug
-    spec:
-      containers:
-        - name: debug
-          image: "nginx:>= 1.16, <= 1.18"
-          command:
-            - sleep
-          args:
-            - +Inf

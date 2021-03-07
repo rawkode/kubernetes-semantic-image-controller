@@ -1,0 +1,16 @@
+{
+    "hosts": [
+        "kubernetes-semantic-image-controller.default.svc",
+        "kubernetes-semantic-image-controller.default.svc.cluster.local"
+    ],
+    "CN": "system:node:kubernetes-semantic-image-controller.default.svc.cluster.local",
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "O": "system:nodes"
+        }
+    ]
+}
