@@ -3,13 +3,20 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	"strings"
 
-	"github.com/Masterminds/semver"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 )
+
+var defaultResolver = &dockerHubResolver{}
+
+type patchObject struct {
+	Op    string `json:"op"`
+	Path  string `json:"path"`
+	Value string `json:"value"`
+}
 
 // HandleMutate takes in our /mutate request and figures out any patches that
 // that need to be made to resolve the image field for semantic versioning
@@ -28,46 +35,26 @@ func HandleMutate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	versions := []string{
-		"1.15",
-		"1.15.6",
-		"1.17.4",
-		"1.18.0",
-		"1.19.6",
-	}
-
-	patchMap := []map[string]string{}
+	// Go through each of the containers and build up a list of patches. For
+	// things where we can't resolve the image or it's already an absolute
+	// path, we will mostly skip over
+	patchMap := make([]patchObject, 0, len(pod.Spec.Containers))
 	for idx, container := range pod.Spec.Containers {
+		if !defaultResolver.ShouldResolve(container.Image) {
+			continue
+		}
 
-		// nginx: >= 1.78
-		// nginx: >= 1.2 <= 1.4.5
-		split := strings.SplitN(container.Image, ":", 2)
-		imageName := split[0]
-		versionConstraint := split[1]
-		constraint, err := semver.NewConstraint(versionConstraint)
-
+		resolvedImage, err := defaultResolver.Resolve(container.Image)
 		if err != nil {
-			sendErr(w, fmt.Errorf("could not parse constraint: %v", err))
+			sendErr(w, fmt.Errorf("could not resolve image %s: %v", container.Image, err))
 			return
 		}
 
-		var bestVersion string
-		for _, version := range versions {
-			v, err := semver.NewVersion(version)
-			if err != nil {
-				sendErr(w, fmt.Errorf("could not parse version: %v", err))
-				return
-			}
-
-			if constraint.Check(v) {
-				bestVersion = version
-			}
-		}
-
-		patchMap = append(patchMap, map[string]string{
-			"op":    "replace",
-			"path":  fmt.Sprintf("/spec/containers/%d/image", idx),
-			"value": fmt.Sprintf("%s:%s", imageName, bestVersion),
+		log.Printf("- Resolved %s to %s", container.Image, resolvedImage)
+		patchMap = append(patchMap, patchObject{
+			Op:    "replace",
+			Path:  fmt.Sprintf("/spec/containers/%d/image", idx),
+			Value: resolvedImage,
 		})
 	}
 
