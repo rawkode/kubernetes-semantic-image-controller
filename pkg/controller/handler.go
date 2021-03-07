@@ -10,7 +10,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-var defaultResolver = &dockerHubResolver{}
+var (
+	defaultResolver Resolver = &dockerHubResolver{}
+)
 
 type patchObject struct {
 	Op    string `json:"op"`
@@ -84,6 +86,13 @@ func HandleMutate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(respBytes)
+}
+
+// HandleHealth takes in our /health request. We respond that we're all okay!
+func HandleHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"status": "ok"}`))
 }
 
 func sendErr(w http.ResponseWriter, err error) {

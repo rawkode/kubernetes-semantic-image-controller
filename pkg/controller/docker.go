@@ -28,14 +28,14 @@ type dockerHubTag struct {
 }
 
 func (d *dockerHubResolver) Resolve(input string) (string, error) {
-	imgName, constraint, ok := d.imageNameAndConstraint(input)
+	imgName, constraint, ok := imageNameAndConstraint(input)
 	if !ok {
 		return "", fmt.Errorf("could not extract image name and version")
 	}
 
 	// Reach out to Docker Registry to fetch the list of images
 	//
-	// TODO: Docker Hub doesn't have an official API to get tags for an image
+	// TODO: Docker Hub doesn't have= an official API to get tags for an image
 	// 		 This may stop working at any point or change in semantics
 	rsp, err := httpClient.Get(fmt.Sprintf("https://registry.hub.docker.com/v1/repositories/%s/tags", imgName))
 	if err != nil {
@@ -60,14 +60,14 @@ func (d *dockerHubResolver) Resolve(input string) (string, error) {
 
 	// Figure out which ones match our constraint
 	candidates := make([]dockerHubTag, 0)
-	for _, image := range tags {
-		parsed, err := semver.NewVersion(image.Tag)
+	for _, tag := range tags {
+		parsed, err := semver.NewVersion(tag.Tag)
 		if err != nil {
 			continue
 		}
 
 		if constraint.Check(parsed) {
-			candidates = append(candidates, image)
+			candidates = append(candidates, tag)
 		}
 	}
 
@@ -101,27 +101,4 @@ func (d *dockerHubResolver) ShouldResolve(input string) bool {
 	// If can be parsed, it's valid!
 	_, err := semver.NewConstraint(version)
 	return err == nil
-}
-
-func (d *dockerHubResolver) imageNameAndConstraint(input string) (string, *semver.Constraints, bool) {
-	// We expect two components, separated by the colon
-	split := strings.SplitN(input, ":", 2)
-	if len(split) <= 1 {
-		return "", nil, false
-	}
-
-	// Check that it contains the semantic characters
-	imageName := strings.TrimSpace(split[0])
-	version := strings.TrimSpace(split[1])
-	if !semanticRegex.MatchString(version) {
-		return "", nil, false
-	}
-
-	// If can be parsed, it's valid!
-	constraint, err := semver.NewConstraint(version)
-	if err != nil {
-		return "", nil, false
-	}
-
-	return imageName, constraint, true
 }
